@@ -17,7 +17,7 @@ dotenv.config({ quiet: true });
 const banner = await figlet.text("Rider Agent Panel");
 
 console.log(chalk.greenBright(banner));
-const badge = chalk.black.bgGreenBright.bold(` v${packageJson.version} ` + chalk.black.bgWhite.bold(` ${packageJson.name}@${branch} `));
+const badge = chalk.black.bgGreenBright.bold(` v${packageJson.version} ` + chalk.black.bgWhite.bold(` ${packageJson.name}@${branch} \n`));
 
 console.log(' ' + badge + '\n');
 console.log(chalk.dim('By Benno van Dorst - https://github.com/bennovandorst'));
