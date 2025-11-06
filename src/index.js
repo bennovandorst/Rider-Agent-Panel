@@ -23,5 +23,5 @@ console.log(' ' + badge + '\n');
 console.log(chalk.dim('By Benno van Dorst - https://github.com/bennovandorst'));
 console.log(chalk.gray('─────────────────────────────────────────────────────────'));
 
-const httpServer = new HttpServer(CONFIG.PORT, CONFIG.SIM_RIGS);
+const httpServer = new HttpServer(process.env.PORT, CONFIG.SIM_RIGS);
 httpServer.start();
