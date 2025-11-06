@@ -62,19 +62,16 @@ function updateSimRigDisplay(simRigId, { online, lastUpdate, data }) {
     const lastUpdateDiv = card.querySelector('.last-update');
     const dataDiv = card.querySelector('.raw-data');
 
-    // Update branch
     if (data?.branch) {
         const branch = data.branch.toLowerCase();
         branchBadge.className = `branch-badge ${(branch === 'dev' && data.devMode) || (branch === 'prod' && !data.devMode) ? branch : 'unknown'}`;
         branchBadge.textContent = data.branch;
     }
 
-    // Update version
     if (data?.version) {
         versionInfo.textContent = `v${data.version}`;
     }
 
-    // Update status
     statusDot.className = `status-dot ${online ? 'online' : 'offline'}`;
     statusText.textContent = online ? 'Online' : 'Offline';
 

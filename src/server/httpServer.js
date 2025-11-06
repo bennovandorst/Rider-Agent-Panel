@@ -40,7 +40,7 @@ export class HttpServer {
             res.sendFile(path.join(__dirname, '../public/index.html'));
         });
 
-        this.app.post('/api/simrig/:id/status', (req, res) => {
+        this.app.post('/v1/api/simrig/:id/status', (req, res) => {
             const { id } = req.params;
             const data = req.body;
 
@@ -61,7 +61,7 @@ export class HttpServer {
             res.json({ success: true });
         });
 
-        this.app.get('/api/simrigs', (req, res) => {
+        this.app.get('/v1/api/simrigs', (req, res) => {
             res.json(this.simRigStatus);
         });
     }
