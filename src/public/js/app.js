@@ -38,7 +38,6 @@ function createSimRigCard(simRigId) {
                 <span class="status-text">Offline</span>
             </div>
             <div class="version-info">v0.0.0</div>
-            <div class="location">Unknown</div>
         </div>
         <div class="last-update">Never</div>
         <div class="data-section">
@@ -62,7 +61,6 @@ function updateSimRigDisplay(simRigId, { online, lastUpdate, data }) {
     const versionInfo = card.querySelector('.version-info');
     const lastUpdateDiv = card.querySelector('.last-update');
     const dataDiv = card.querySelector('.raw-data');
-    const locationDiv = card.querySelector('.location');
 
     if (data?.branch) {
         const branch = data.branch.toLowerCase();
@@ -72,12 +70,6 @@ function updateSimRigDisplay(simRigId, { online, lastUpdate, data }) {
 
     if (data?.version) {
         versionInfo.textContent = `v${data.version}`;
-    }
-
-    if (data?.location) {
-        locationDiv.textContent = data.location;
-    } else {
-        locationDiv.textContent = 'Unknown';
     }
 
     statusDot.className = `status-dot ${online ? 'online' : 'offline'}`;
