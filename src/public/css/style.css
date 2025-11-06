@@ -238,6 +238,87 @@ body {
     padding: 2rem;
 }
 
+.log-section {
+    margin-top: 1rem;
+}
+
+.log-viewer {
+    background: var(--bg-secondary);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.log-viewer::-webkit-scrollbar {
+    width: 8px;
+}
+
+.log-viewer::-webkit-scrollbar-track {
+    background: var(--bg-card);
+    border-radius: 4px;
+}
+
+.log-viewer::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+.log-entry {
+    font-family: 'Courier New', monospace;
+    font-size: 0.813rem;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0.25rem;
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.log-time {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.log-level {
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.log-info .log-level {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary);
+}
+
+.log-error .log-level {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.log-warning .log-level {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.log-success .log-level {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.log-debug .log-level {
+    background: rgba(148, 163, 184, 0.2);
+    color: var(--text-secondary);
+}
+
+.log-message {
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;

@@ -10,15 +10,26 @@ socket.on('initial-status', (statuses) => {
         updateSimRigDisplay(simRigId, status);
     });
 
+    setTimeout(() => {
+        Object.keys(statuses).forEach(simRigId => {
+            loadLogs(simRigId);
+        });
+    }, 0);
+
     updateStats();
 });
 
 socket.on('status-update', ({ simRigId, online, lastUpdate, data }) => {
     if (!document.getElementById(`simrig-${simRigId}`)) {
         createSimRigCard(simRigId);
+        setTimeout(() => loadLogs(simRigId), 0);
     }
     updateSimRigDisplay(simRigId, { online, lastUpdate, data });
     updateStats();
+});
+
+socket.on('log-update', ({ simRigId, log }) => {
+    appendLog(simRigId, log);
 });
 
 function createSimRigCard(simRigId) {
@@ -40,10 +51,16 @@ function createSimRigCard(simRigId) {
             <div class="version-info">v0.0.0</div>
         </div>
         <div class="last-update">Never</div>
-        <div class="data-section">
+        <!--<div class="data-section">
             <h3 class="data-title">Raw Data</h3>
             <div class="raw-data">
                 <p class="no-data">No data available</p>
+            </div>
+        </div>-->
+        <div class="log-section">
+            <h3 class="data-title">Recent Logs</h3>
+            <div class="log-viewer" id="logs-${simRigId}">
+                <p class="no-data">No logs available</p>
             </div>
         </div>
     `;
@@ -60,7 +77,7 @@ function updateSimRigDisplay(simRigId, { online, lastUpdate, data }) {
     const statusText = card.querySelector('.status-text');
     const versionInfo = card.querySelector('.version-info');
     const lastUpdateDiv = card.querySelector('.last-update');
-    const dataDiv = card.querySelector('.raw-data');
+    //const dataDiv = card.querySelector('.raw-data');
 
     if (data?.branch) {
         const branch = data.branch.toLowerCase();
@@ -82,11 +99,70 @@ function updateSimRigDisplay(simRigId, { online, lastUpdate, data }) {
         lastUpdateDiv.textContent = 'Never';
     }
 
-    if (data && Object.keys(data).length > 0) {
+    /*if (data && Object.keys(data).length > 0) {
         dataDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
     } else {
         dataDiv.innerHTML = '<p class="no-data">No data available</p>';
+    }*/
+}
+
+async function loadLogs(simRigId) {
+    try {
+        const response = await fetch(`/v1/api/simrig/${simRigId}/logs`);
+        const logs = await response.json();
+
+        const logViewer = document.getElementById(`logs-${simRigId}`);
+        if (!logViewer) {
+            console.warn(`Log viewer not found for SimRig ${simRigId}`);
+            return;
+        }
+
+        if (logs.length === 0) {
+            logViewer.innerHTML = '<p class="no-data">No logs available</p>';
+        } else {
+            logViewer.innerHTML = logs.map(log => createLogEntry(log)).join('');
+        }
+    } catch (error) {
+        console.error('Failed to load logs:', error);
     }
+}
+
+function appendLog(simRigId, log) {
+    const logViewer = document.getElementById(`logs-${simRigId}`);
+    if (!logViewer) return;
+
+    const noData = logViewer.querySelector('.no-data');
+    if (noData) {
+        logViewer.innerHTML = '';
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = createLogEntry(log);
+
+    logViewer.insertBefore(wrapper.firstElementChild, logViewer.firstChild);
+
+    while (logViewer.children.length > 20) {
+        logViewer.removeChild(logViewer.lastChild);
+    }
+}
+
+function createLogEntry(log) {
+    const time = new Date(log.timestamp).toLocaleTimeString();
+    const levelClass = log.level?.toLowerCase() || 'info';
+
+    return `
+        <div class="log-entry log-${levelClass}">
+            <span class="log-time">${time}</span>
+            <span class="log-level">${log.level || 'INFO'}</span>
+            <span class="log-message">${escapeHtml(log.message)}</span>
+        </div>
+    `;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function updateStats() {
