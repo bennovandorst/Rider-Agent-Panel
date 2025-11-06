@@ -22,6 +22,7 @@ export class HttpServer {
             this.simRigStatus[id] = {
                 online: false,
                 lastUpdate: null,
+                isInUse: false,
                 data: {}
             };
             this.simRigLogs[id] = [];
@@ -81,6 +82,7 @@ export class HttpServer {
                 lastUpdate: Date.now(),
                 branch: data.branch,
                 version: data.version,
+                isInUse: data.isInUse || false,
                 data: data
             };
 

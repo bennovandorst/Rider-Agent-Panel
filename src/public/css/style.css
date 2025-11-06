@@ -157,6 +157,7 @@ body {
     align-items: center;
     margin-bottom: 1rem;
     font-size: 0.875rem;
+    gap: 1rem;
 }
 
 .status-indicator {
@@ -180,6 +181,28 @@ body {
 .status-dot.offline {
     background: var(--danger);
     animation: none;
+}
+
+.usage-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.usage-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.usage-dot.in-use {
+    background: var(--warning);
+    box-shadow: 0 0 8px var(--warning);
+    animation: pulse 2s infinite;
+}
+
+.usage-dot.idle {
+    background: var(--text-secondary);
 }
 
 .version-info {
