@@ -16,6 +16,7 @@ export class HttpServer {
         this.httpServer = createServer(this.app);
         this.io = new Server(this.httpServer);
         this.simRigStatus = {};
+        this.simRigLogs = {};
 
         Object.keys(simRigs).forEach(id => {
             this.simRigStatus[id] = {
@@ -23,6 +24,7 @@ export class HttpServer {
                 lastUpdate: null,
                 data: {}
             };
+            this.simRigLogs[id] = [];
         });
 
         this.setupMiddleware();
@@ -84,6 +86,49 @@ export class HttpServer {
 
             this.io.emit('status-update', { simRigId: id, ...this.simRigStatus[id] });
             res.json({ success: true });
+        });
+
+        this.app.post('/v1/api/simrig/:id/logs', (req, res) => {
+            if (process.env.NODE_ENV === 'production' && !req.secure) {
+                return res.status(403).json({ error: 'HTTPS required' });
+            }
+
+            const { id } = req.params;
+            const { level, message, timestamp } = req.body;
+
+            const clientKey = req.headers['x-secret-key'];
+            if (!this.isValidSecret(clientKey)) {
+                return res.status(401).json({ error: 'Unauthorized: Invalid secret key' });
+            }
+
+            if (!this.simRigLogs[id]) {
+                return res.status(404).json({ error: 'SimRig not found' });
+            }
+
+            const logEntry = {
+                level,
+                message,
+                timestamp: timestamp || Date.now()
+            };
+
+            this.simRigLogs[id].push(logEntry);
+
+            if (this.simRigLogs[id].length > 100) {
+                this.simRigLogs[id].shift();
+            }
+
+            this.io.emit('log-update', { simRigId: id, log: logEntry });
+            res.json({ success: true });
+        });
+
+        this.app.get('/v1/api/simrig/:id/logs', (req, res) => {
+            const { id } = req.params;
+
+            if (!this.simRigLogs[id]) {
+                return res.status(404).json({ error: 'SimRig not found' });
+            }
+
+            res.json(this.simRigLogs[id]);
         });
 
         this.app.get('/v1/api/simrigs', (req, res) => {
