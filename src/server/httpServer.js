@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import { createServer } from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { timingSafeEqual } from 'crypto';
 import { logInfo } from "../utils/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,14 +36,39 @@ export class HttpServer {
         this.app.use(express.static(path.join(__dirname, '../public')));
     }
 
+    isValidSecret(clientKey) {
+        const serverKey = process.env.SECRET_KEY;
+        if (!serverKey || !clientKey || clientKey.length !== serverKey.length) {
+            return false;
+        }
+
+        try {
+            return timingSafeEqual(
+                Buffer.from(clientKey),
+                Buffer.from(serverKey)
+            );
+        } catch {
+            return false;
+        }
+    }
+
     setupRoutes() {
         this.app.get('/', (req, res) => {
             res.sendFile(path.join(__dirname, '../public/index.html'));
         });
 
         this.app.post('/v1/api/simrig/:id/status', (req, res) => {
+            if (process.env.NODE_ENV === 'production' && !req.secure) {
+                return res.status(403).json({ error: 'HTTPS required' });
+            }
+
             const { id } = req.params;
             const data = req.body;
+
+            const clientKey = req.headers['x-secret-key'];
+            if (!this.isValidSecret(clientKey)) {
+                return res.status(401).json({ error: 'Unauthorized: Invalid secret key' });
+            }
 
             if (!this.simRigStatus[id]) {
                 return res.status(404).json({ error: 'SimRig not found' });
@@ -57,7 +83,6 @@ export class HttpServer {
             };
 
             this.io.emit('status-update', { simRigId: id, ...this.simRigStatus[id] });
-
             res.json({ success: true });
         });
 
