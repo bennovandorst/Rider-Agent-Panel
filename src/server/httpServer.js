@@ -5,6 +5,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { timingSafeEqual } from 'crypto';
 import { logInfo } from "../utils/logger.js";
+import fs from 'fs';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -131,6 +135,18 @@ export class HttpServer {
             }
 
             res.json(this.simRigLogs[id]);
+        });
+
+        this.app.get('/v1/api/info', (req, res) => {
+            const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf-8'));
+            const gitRev = require('git-rev-sync');
+
+            res.json({
+                name: packageJson.name,
+                description: packageJson.description,
+                version: packageJson.version,
+                branch: gitRev.branch()
+            });
         });
 
         this.app.get('/v1/api/simrigs', (req, res) => {
