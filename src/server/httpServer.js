@@ -65,8 +65,11 @@ export class HttpServer {
         });
 
         this.app.post('/v1/api/simrig/:id/status', (req, res) => {
-            if (process.env.NODE_ENV === 'production' && !req.secure) {
-                return res.status(403).json({ error: 'HTTPS required' });
+            if (process.env.NODE_ENV === 'production') {
+                const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+                if (proto !== 'https') {
+                    return res.status(403).json({error: 'HTTPS required'});
+                }
             }
 
             const { id } = req.params;
