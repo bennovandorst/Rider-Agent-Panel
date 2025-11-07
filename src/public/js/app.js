@@ -123,6 +123,20 @@ async function loadLogs(simRigId) {
     }
 }
 
+async function loadAppVersion() {
+    try {
+        const response = await fetch('/v1/api/info');
+        const { name, description, version, branch } = await response.json();
+
+        document.getElementById('app-version').textContent = `v${version}@${branch}`;
+    } catch (error) {
+        document.getElementById('app-version').textContent = 'Unknown';
+        console.error('Failed to load info:', error);
+    }
+}
+
+loadAppVersion();
+
 function appendLog(simRigId, log) {
     const logViewer = document.getElementById(`logs-${simRigId}`);
     if (!logViewer) return;
