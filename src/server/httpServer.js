@@ -64,6 +64,21 @@ export class HttpServer {
             res.sendFile(path.join(__dirname, '../public/index.html'));
         });
 
+        this.app.get('/v1/api/simrig/:id/access', (req, res) => {
+            const { id } = req.params;
+
+            const clientKey = req.headers['x-secret-key'];
+            if (!this.isValidSecret(clientKey)) {
+                return res.status(401).json({ error: 'Unauthorized: Invalid secret key' });
+            }
+
+            if (!this.simRigStatus[id]) {
+                return res.status(404).json({ error: 'SimRig not found' });
+            }
+
+            res.json({ success: true });
+        })
+
         this.app.post('/v1/api/simrig/:id/status', (req, res) => {
             if (process.env.NODE_ENV === 'production') {
                 const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
