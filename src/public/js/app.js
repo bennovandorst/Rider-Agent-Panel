@@ -113,10 +113,12 @@ async function loadLogs(simRigId) {
             return;
         }
 
-        if (logs.length === 0) {
+        const filteredLogs = logs.filter(log => log.level?.toLowerCase() !== 'panel');
+
+        if (filteredLogs.length === 0) {
             logViewer.innerHTML = '<p class="no-data">No logs available</p>';
         } else {
-            logViewer.innerHTML = logs.map(log => createLogEntry(log)).join('');
+            logViewer.innerHTML = filteredLogs.map(log => createLogEntry(log)).join('');
         }
     } catch (error) {
         console.error('Failed to load logs:', error);
@@ -138,6 +140,10 @@ async function loadAppVersion() {
 loadAppVersion();
 
 function appendLog(simRigId, log) {
+    if (log.level?.toLowerCase() === 'panel') {
+        return;
+    }
+
     const logViewer = document.getElementById(`logs-${simRigId}`);
     if (!logViewer) return;
 
