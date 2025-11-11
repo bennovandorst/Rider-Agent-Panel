@@ -157,7 +157,7 @@ function appendLog(simRigId, log) {
 
     logViewer.insertBefore(wrapper.firstElementChild, logViewer.firstChild);
 
-    while (logViewer.children.length > 20) {
+    while (logViewer.children.length > 5) {
         logViewer.removeChild(logViewer.lastChild);
     }
 }
