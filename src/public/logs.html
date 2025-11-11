@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs - Rider Agent Panel</title>
+    <link rel="stylesheet" href="/css/logs.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div class="header-content">
+            <div class="header-top">
+                <h1 class="title">System Logs</h1>
+                <a href="/" class="back-button">← Back to Dashboard</a>
+            </div>
+            <div class="controls">
+                <div class="filter-group">
+                    <label for="simrig-filter">SimRig:</label>
+                    <select id="simrig-filter" class="filter-select">
+                        <option value="all">All SimRigs</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="level-filter">Level:</label>
+                    <select id="level-filter" class="filter-select">
+                        <option value="all">All Levels</option>
+                        <option value="info">Info</option>
+                        <option value="success">Success</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                        <option value="debug">Debug</option>
+                        <option value="panel">Panel</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <input type="text" id="search-input" class="search-input" placeholder="Search logs...">
+                </div>
+                <button id="clear-filters" class="clear-button">Clear Filters</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">Total Logs</span>
+                <span class="stat-value" id="total-logs">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Filtered</span>
+                <span class="stat-value" id="filtered-logs">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Info</span>
+                <span class="stat-value info-count" id="info-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Errors</span>
+                <span class="stat-value error-count" id="error-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Warnings</span>
+                <span class="stat-value warning-count" id="warning-count">0</span>
+            </div>
+        </div>
+
+        <div class="log-container">
+            <div id="log-list" class="log-list">
+                <p class="no-data">Loading logs...</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="/js/logs.js"></script>
+</body>
+</html>
