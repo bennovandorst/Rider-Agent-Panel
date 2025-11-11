@@ -113,7 +113,7 @@ async function loadLogs(simRigId) {
             return;
         }
 
-        const filteredLogs = logs.filter(log => log.level?.toLowerCase() !== 'panel');
+        const filteredLogs = logs.filter(log => log.level?.toLowerCase() !== 'filtered');
 
         if (filteredLogs.length === 0) {
             logViewer.innerHTML = '<p class="no-data">No logs available</p>';
@@ -140,7 +140,7 @@ async function loadAppVersion() {
 loadAppVersion();
 
 function appendLog(simRigId, log) {
-    if (log.level?.toLowerCase() === 'panel') {
+    if (log.level?.toLowerCase() === 'filtered') {
         return;
     }
 
