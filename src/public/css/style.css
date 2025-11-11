@@ -48,6 +48,33 @@ body {
     border: 1px solid var(--border);
 }
 
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.logs-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 0.5rem;
+    border: 1px solid var(--primary);
+    transition: all 0.2s;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logs-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow);
+}
+
 .title {
     font-size: 2.5rem;
     font-weight: 700;

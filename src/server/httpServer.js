@@ -64,6 +64,10 @@ export class HttpServer {
             res.sendFile(path.join(__dirname, '../public/index.html'));
         });
 
+        this.app.get('/logs', (req, res) => {
+            res.sendFile(path.join(__dirname, '../public/logs.html'));
+        });
+
         this.app.get('/v1/api/simrig/:id/access', (req, res) => {
             const { id } = req.params;
 
