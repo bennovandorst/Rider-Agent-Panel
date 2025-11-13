@@ -194,6 +194,7 @@ export class HttpServer {
                 const status = this.simRigStatus[id];
                 if (status.online && status.lastUpdate && (now - status.lastUpdate > 10000)) {
                     status.online = false;
+                    status.isInUse = false;
                     statusChanged = true;
                     this.io.emit('status-update', { simRigId: id, ...status });
                 }
