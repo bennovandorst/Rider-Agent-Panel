@@ -1,9 +1,11 @@
 const socket = io();
-let simRigCount = { total: 0, online: 0 };
+let simRigCount = { total: 0, online: 0, inUse: 0 };
+let allSimRigs = {};
 
 socket.on('initial-status', (statuses) => {
     const grid = document.getElementById('simrigs-grid');
     grid.innerHTML = '';
+    allSimRigs = statuses;
 
     Object.entries(statuses).forEach(([simRigId, status]) => {
         createSimRigCard(simRigId);
@@ -24,6 +26,8 @@ socket.on('status-update', ({ simRigId, online, lastUpdate, isInUse, data }) => 
         createSimRigCard(simRigId);
         setTimeout(() => loadLogs(simRigId), 0);
     }
+
+    allSimRigs[simRigId] = { online, lastUpdate, isInUse, data };
     updateSimRigDisplay(simRigId, { online, lastUpdate, isInUse, data });
     updateStats();
 });
@@ -34,9 +38,16 @@ socket.on('log-update', ({ simRigId, log }) => {
 
 function createSimRigCard(simRigId) {
     const grid = document.getElementById('simrigs-grid');
+
+    const noRigs = grid.querySelector('.no-rigs');
+    if (noRigs) {
+        noRigs.remove();
+    }
+
     const card = document.createElement('div');
     card.className = 'simrig-card';
     card.id = `simrig-${simRigId}`;
+    card.dataset.simrigId = simRigId;
 
     card.innerHTML = `
         <div class="card-header">
@@ -54,7 +65,7 @@ function createSimRigCard(simRigId) {
             </div>
             <div class="version-info">v0.0.0</div>
         </div>
-        <div class="last-update">Never</div>
+        <div class="last-update">Never updated</div>
         <div class="log-section">
             <h3 class="data-title">Recent Logs</h3>
             <div class="log-viewer" id="logs-${simRigId}">
@@ -69,6 +80,9 @@ function createSimRigCard(simRigId) {
 function updateSimRigDisplay(simRigId, { online, lastUpdate, isInUse, data }) {
     const card = document.getElementById(`simrig-${simRigId}`);
     if (!card) return;
+
+    card.dataset.online = online;
+    card.dataset.inUse = isInUse;
 
     const branchBadge = card.querySelector('.branch-badge');
     const statusDot = card.querySelector('.status-dot');
@@ -96,9 +110,21 @@ function updateSimRigDisplay(simRigId, { online, lastUpdate, isInUse, data }) {
 
     if (lastUpdate) {
         const date = new Date(lastUpdate);
-        lastUpdateDiv.textContent = `Last update: ${date.toLocaleTimeString()}`;
+        const now = new Date();
+        const dateStr = date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        const timeStr = date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+        lastUpdateDiv.textContent = `${dateStr} at ${timeStr}`;
     } else {
-        lastUpdateDiv.textContent = 'Never';
+        lastUpdateDiv.textContent = 'Never updated';
     }
 }
 
@@ -163,16 +189,16 @@ function appendLog(simRigId, log) {
 }
 
 function createLogEntry(log) {
-    const time = new Date(log.timestamp).toLocaleTimeString();
+    const time = new Date(log.timestamp).toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
     const levelClass = log.level?.toLowerCase() || 'info';
+    const level = (log.level || 'INFO').toUpperCase().padEnd(7);
 
-    return `
-        <div class="log-entry log-${levelClass}">
-            <span class="log-time">${time}</span>
-            <span class="log-level">${log.level || 'INFO'}</span>
-            <span class="log-message">${escapeHtml(log.message)}</span>
-        </div>
-    `;
+    return `<div class="log-entry log-${levelClass}"><span class="log-time">[${time}]</span><span class="log-level">${level}</span><span class="log-message">${escapeHtml(log.message)}</span></div>`;
 }
 
 function escapeHtml(text) {
@@ -184,10 +210,80 @@ function escapeHtml(text) {
 function updateStats() {
     const cards = document.querySelectorAll('.simrig-card');
     const onlineCards = document.querySelectorAll('.status-dot.online');
+    const inUseCards = document.querySelectorAll('.usage-dot.in-use');
 
     simRigCount.total = cards.length;
     simRigCount.online = onlineCards.length;
+    simRigCount.inUse = inUseCards.length;
 
     document.getElementById('total-rigs').textContent = simRigCount.total;
     document.getElementById('online-rigs').textContent = simRigCount.online;
+    document.getElementById('inuse-rigs').textContent = simRigCount.inUse;
+}
+
+const searchInput = document.getElementById('search-input');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        filterCards(searchTerm, document.getElementById('filter-select')?.value || 'all');
+    });
+}
+
+const filterSelect = document.getElementById('filter-select');
+if (filterSelect) {
+    filterSelect.addEventListener('change', (e) => {
+        const filterValue = e.target.value;
+        filterCards(document.getElementById('search-input')?.value.toLowerCase() || '', filterValue);
+    });
+}
+
+function filterCards(searchTerm, filterValue) {
+    const cards = document.querySelectorAll('.simrig-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const simrigId = card.dataset.simrigId;
+        const simrigName = `simrig ${simrigId}`.toLowerCase();
+        const isOnline = card.dataset.online === 'true';
+        const isInUse = card.dataset.inUse === 'true';
+
+        const matchesSearch = simrigName.includes(searchTerm);
+
+        let matchesFilter = true;
+        if (filterValue === 'online') {
+            matchesFilter = isOnline;
+        } else if (filterValue === 'offline') {
+            matchesFilter = !isOnline;
+        } else if (filterValue === 'in-use') {
+            matchesFilter = isInUse;
+        }
+
+        if (matchesSearch && matchesFilter) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    const grid = document.getElementById('simrigs-grid');
+    let noResults = grid.querySelector('.no-rigs');
+
+    if (visibleCount === 0 && cards.length > 0) {
+        if (!noResults) {
+            noResults = document.createElement('div');
+            noResults.className = 'no-rigs';
+            noResults.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8" stroke-width="2"/>
+                    <path d="m21 21-4.35-4.35" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <p>No SimRigs found</p>
+                <span>Try adjusting your search or filter</span>
+            `;
+            grid.appendChild(noResults);
+        }
+    } else if (noResults && visibleCount > 0) {
+        noResults.remove();
+    }
 }

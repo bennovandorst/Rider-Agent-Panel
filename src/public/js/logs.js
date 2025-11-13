@@ -7,6 +7,21 @@ const filters = {
     search: ''
 };
 
+async function fetchVersion() {
+    try {
+        const response = await fetch('/v1/api/info');
+        const data = await response.json();
+        const versionBadge = document.getElementById('app-version');
+        if (versionBadge) {
+            versionBadge.textContent = `v${data.version}@${data.branch}`;
+        }
+    } catch (error) {
+        console.error('Failed to fetch version:', error);
+    }
+}
+
+fetchVersion();
+
 socket.on('initial-status', async (statuses) => {
     const simrigFilter = document.getElementById('simrig-filter');
 
@@ -87,17 +102,16 @@ function getFilteredLogs() {
 }
 
 function createLogEntry(log) {
-    const time = new Date(log.timestamp).toLocaleString();
+    const time = new Date(log.timestamp).toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
     const levelClass = log.level?.toLowerCase() || 'info';
+    const level = (log.level || 'INFO').toUpperCase().padEnd(7);
 
-    return `
-        <div class="log-entry log-${levelClass}">
-            <span class="log-simrig">SimRig ${log.simRigId}</span>
-            <span class="log-time">${time}</span>
-            <span class="log-level">${log.level || 'INFO'}</span>
-            <span class="log-message">${escapeHtml(log.message)}</span>
-        </div>
-    `;
+    return `<div class="log-entry log-${levelClass}"><span class="log-time">[${time}]</span><span class="log-simrig">SimRig ${log.simRigId}</span><span class="log-level">${level}</span><span class="log-message">${escapeHtml(log.message)}</span></div>`;
 }
 
 function escapeHtml(text) {
