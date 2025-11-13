@@ -144,7 +144,8 @@ async function loadLogs(simRigId) {
         if (filteredLogs.length === 0) {
             logViewer.innerHTML = '<p class="no-data">No logs available</p>';
         } else {
-            logViewer.innerHTML = filteredLogs.map(log => createLogEntry(log)).join('');
+            const recentLogs = filteredLogs.slice(-5).reverse();
+            logViewer.innerHTML = recentLogs.map(log => createLogEntry(log)).join('');
         }
     } catch (error) {
         console.error('Failed to load logs:', error);
