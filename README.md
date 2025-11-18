@@ -1,4 +1,4 @@
-# Coming Soon
+# Rider Agent Panel
 
 .env:
 ```
