@@ -1,7 +1,7 @@
-name: Deploy to Production Webserver
+name: Deploy to Staging Webserver
 on:
   push:
-    branches: ['prod']
+    branches: ['staging']
 jobs:
   restart-server:
     runs-on: ubuntu-latest
@@ -10,6 +10,6 @@ jobs:
         uses: outsparkled/pterodactyl-power-action@v0.1.0
         with:
           panel-url: ${{ secrets.PANEL_URL }}
-          server-id: ${{ secrets.SERVER_ID }}
+          server-id: ${{ secrets.STAGING_SERVER_ID }}
           bearer-token: ${{ secrets.BEARER_TOKEN }}
           power-action: 'restart'
