@@ -175,3 +175,22 @@ document.getElementById('clear-filters').addEventListener('click', () => {
 
     renderLogs();
 });
+
+function ensureLogoutLinkLogs() {
+    try {
+        const navActions = document.querySelector('.navbar-actions');
+        if (!navActions) return;
+        if (navActions.querySelector('.logout-link')) return;
+        const a = document.createElement('a');
+        a.href = '/auth/logout';
+        a.className = 'btn-ghost logout-link';
+        a.textContent = 'Logout';
+        a.addEventListener('click', (e) => {
+            setTimeout(() => { window.location.href = '/auth/logout'; }, 50);
+        });
+        navActions.appendChild(a);
+    } catch (e) {
+    }
+}
+
+ensureLogoutLinkLogs();

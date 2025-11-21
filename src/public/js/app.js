@@ -1,4 +1,42 @@
 const socket = io();
+function ensureLogoutLink() {
+    try {
+        const navActions = document.querySelector('.navbar-actions');
+        if (!navActions) return;
+        if (navActions.querySelector('.logout-link')) return; // already added
+        const a = document.createElement('a');
+        a.href = '/auth/logout';
+        a.className = 'btn-ghost logout-link';
+        a.textContent = 'Logout';
+        navActions.appendChild(a);
+    } catch (e) {
+    }
+}
+
+ensureLogoutLink();
+
+async function checkAuthStatus(redirectIfNot=true) {
+    try {
+        const res = await fetch('/auth/status', { credentials: 'same-origin' });
+        if (!res.ok) {
+            if (redirectIfNot) window.location.href = '/auth/login';
+            return false;
+        }
+        const json = await res.json();
+        if (!json.authenticated) {
+            if (redirectIfNot) window.location.href = '/auth/login';
+            return false;
+        }
+        return true;
+    } catch (e) {
+        if (redirectIfNot) window.location.href = '/auth/login';
+        return false;
+    }
+}
+
+checkAuthStatus(true);
+setInterval(() => checkAuthStatus(false), 10000);
+
 let simRigCount = { total: 0, online: 0, inUse: 0 };
 let allSimRigs = {};
 
