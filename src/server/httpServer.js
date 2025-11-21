@@ -6,9 +6,13 @@ import { fileURLToPath } from 'url';
 import { timingSafeEqual } from 'crypto';
 import { logInfo } from "../utils/logger.js";
 import fs from 'fs';
+import cookieParser from 'cookie-parser';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
+
+import authRouter from '../routes/auth.js';
+import requireAuth from '../middleware/requireAuth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,7 +44,17 @@ export class HttpServer {
 
     setupMiddleware() {
         this.app.use(express.json());
-        this.app.use(express.static(path.join(__dirname, '../public')));
+        this.app.use(cookieParser());
+
+        this.app.use((req, res, next) => {
+            const protectedPaths = ['/', '/logs', '/index.html', '/logs.html'];
+            if (protectedPaths.includes(req.path)) {
+                return requireAuth(req, res, next);
+            }
+            return next();
+        });
+
+        this.app.use(express.static(path.join(__dirname, '../public'), { index: false }));
     }
 
     isValidSecret(clientKey) {
@@ -60,11 +74,21 @@ export class HttpServer {
     }
 
     setupRoutes() {
+        this.app.use('/auth', authRouter);
+
         this.app.get('/', (req, res) => {
             res.sendFile(path.join(__dirname, '../public/index.html'));
         });
 
+        this.app.get('/index.html', (req, res) => {
+            res.sendFile(path.join(__dirname, '../public/index.html'));
+        });
+
         this.app.get('/logs', (req, res) => {
+            res.sendFile(path.join(__dirname, '../public/logs.html'));
+        });
+
+        this.app.get('/logs.html', (req, res) => {
             res.sendFile(path.join(__dirname, '../public/logs.html'));
         });
 
